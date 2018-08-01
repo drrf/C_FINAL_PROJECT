@@ -1,9 +1,8 @@
-
 /*
  *          File: main.c
  *        Author: Ron F. <>
  * Last Modified: April 8, 2018
- *         Topic: asmbler
+ *         Topic: ASSEMBLER
  * ----------------------------------------------------------------
  */
 #include "myas.h"
@@ -14,7 +13,7 @@ int main ( int argc, char *argv[] )
     int length = 0;
 
     printf("\n****************************************");
-	printf("\nThis program read ASMBLER files\nand compile them to machine code\n");
+	printf("\nThis program read ASSEMBLER files\nand compile them to machine code\n");
 	printf("****************************************\n");
 
 

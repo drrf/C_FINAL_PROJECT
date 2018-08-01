@@ -2,7 +2,7 @@
  *          File: err.c
  *        Author: Ron F. <>
  * Last Modified: April 8, 2018
- *         Topic: asmbler
+ *         Topic: ASSEMBLER
  * ----------------------------------------------------------------
  */
 

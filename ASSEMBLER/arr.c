@@ -3,7 +3,7 @@
  *          File: arr.c
  *        Author: Ron F. <>
  * Last Modified: April 8, 2018
- *         Topic: asmbler
+ *         Topic: ASSEMBLER
  * ----------------------------------------------------------------
  */
 /* copy from file to array and fix what u can */
@@ -107,7 +107,8 @@ int cpToArr (int x, char str [MAX_NAME])
                 S.SLen = i;
                 S.SLines = NLine;
                 S.SLineArr = &LineArr[0];
-		S.Code = &FileC[0];
+				S.Code = &FileC[0];
+				S.FileN = &str[0];
                 r1(S); 
             }  
         }
