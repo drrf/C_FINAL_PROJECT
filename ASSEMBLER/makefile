@@ -1,43 +1,48 @@
 # MAKEFILE FOR ASSEMBLER PROGRAM
 # Last Modified: May 8, 2018
 # GLOBAL DEFINITIONS
-CC=gcc
-GFLAGS = -g -ansi -Wall -pedantic
-CFLAGS = -c -ansi -Wall -pedantic
-ALLFILES = main.o arr.o ins_and_free.o r1.o r2.o parsing.o data.o opt.o label.o err.o
+GCC=gcc -c -g
+FLAGS = -ansi -Wall -pedantic
+ALLFILES = main.o arr.o ins_and_rem.o algo.o parsing.o encode.o data.o opt.o label.o en_ex.o err.o mc.o
 
 myprog : $(ALLFILES)
-	$(CC) $(GFLAGS) $(ALLFILES) -o myprog
+	gcc -g $(FLAGS) $(ALLFILES) -o myprog
 
 main.o : main.c myas.h
-	$(CC) $(CFLAGS) main.c -o main.o
+	$(GCC) $(FLAGS) main.c -o main.o
 
 arr.o : arr.c myas.h
-	$(CC) $(CFLAGS) arr.c -o arr.o
+	$(GCC) $(FLAGS) arr.c -o arr.o
 
-ins_and_free.o : ins_and_free.c myas.h
-	$(CC) $(CFLAGS) ins_and_free.c -o ins_and_free.o
+ins_and_rem.o : ins_and_rem.c myas.h
+	$(GCC) $(FLAGS) ins_and_rem.c -o ins_and_rem.o
 
-r1.o : r1.c myas.h
-	$(CC) $(CFLAGS) r1.c -o r1.o
-
-r2.o : r2.c myas.h
-	$(CC) $(CFLAGS) r2.c -o r2.o
+algo.o : algo.c myas.h
+	$(GCC) $(FLAGS) algo.c -o algo.o
 
 parsing.o : parsing.c myas.h
-	$(CC) $(CFLAGS) parsing.c -o parsing.o
+	$(GCC) $(FLAGS) parsing.c -o parsing.o
+
+encode.o : encode.c myas.h
+	$(GCC) $(FLAGS) encode.c -o encode.o
 
 data.o : data.c myas.h
-	$(CC) $(CFLAGS) data.c -o data.o
+	$(GCC) $(FLAGS) data.c -o data.o
 
 opt.o : opt.c myas.h
-	$(CC) $(CFLAGS) opt.c -o opt.o
+	$(GCC) $(FLAGS) opt.c -o opt.o
 
 label.o : label.c myas.h
-	$(CC) $(CFLAGS) label.c -o label.o
+	$(GCC) $(FLAGS) label.c -o label.o
+
+en_ex.o : en_ex.c myas.h
+	$(GCC) $(FLAGS) en_ex.c -o en_ex.o
 
 err.o : err.c myas.h
-	$(CC) $(CFLAGS) err.c -o err.o
+	$(GCC) $(FLAGS) err.c -o err.o
+
+mc.o : mc.c myas.h
+	$(GCC) $(FLAGS) mc.c -o mc.o
 
 
 run:

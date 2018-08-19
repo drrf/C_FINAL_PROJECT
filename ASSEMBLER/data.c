@@ -1,161 +1,138 @@
 /*
  *          File: data.c
  *        Author: Ron F. <>
- * Last Modified: April 8, 2018
+ * Last Modified: August 19, 2018
  *         Topic: ASSEMBLER
  * ----------------------------------------------------------------
  */
 
 #include "myas.h"
 
-/* lalloc: make a lnode for DC linklist */
-lnode *lalloc(void)
-{
-    return (lnode *) malloc(sizeof(lnode));
-}
-
+/* SWITCH TO THE RIGHT DATA LINE CASE */
 int dataLine (theDATA d, int r)
 {
-	int i = 0, switch_n = 0;
-	int words = 0, label = 0;
-	int BREAK = 0, ERR = -999;
-	lnode * TEMP = d.tab -> DC_HEAD;
+	int i = ZERO, switch_n;
+	int label = ZERO;
+	int BREAK = ZERO;
 	tnode * TEMP_T = d.tab -> T_ROOT;
 	char * temp_l;
+	theDATA * d_ptr = &d;
 
-	words = d.WORDS; /* HOW MUCH WORD IN THIS LINE */
-
-	printf("FOUND DATA LINE HERE WITH %d WORDS!\n", words+1);
 	switch_n = (int)d.ENCODING[i];
 
-	for (i = 0; i <= words; i++){
+	for (i = ZERO; i <= d.WORDS; i++){
 		switch(switch_n) {
-			case LABEL_N :
-				if (r == R_ONE){
-					printf("NEW LABEL FOUND: %s \n", d.NEW_LABEL);
-					temp_l = d.NEW_LABEL;
-					TEMP_T = addtree (TEMP_T, temp_l, d);
-				}
-				switch_n = (int)d.ENCODING[i+1];
+			case LABEL_N : /* LINE START WITH LABEL */
+				if (r == R_ONE ){ /* IF R_ONE ADD LABEL TO THE TREE */
+					switch_n = (int)d.ENCODING[i+ONE];
+					if (switch_n != EX_N && switch_n != EN_N ) {
+						temp_l = d.NEW_LABEL;
+						TEMP_T = addtree (TEMP_T, temp_l, d);
+					}
+				} else
+					switch_n = (int)d.ENCODING[i+ONE];
 		    	break;
-			case EX_N :
-				if (r == R_ONE){
-					printf("extern -> FOUND ");
+			case EX_N : /* LINE START WITH EXTREN */
+				if (r == R_ONE){ /* IF R_ONE ADD LABEL TO THE TREE */
 					switch_n = (int)d.ENCODING[++i];
-					if (d.WORDS > 1 || switch_n != -1) {
-						printf("ERR IN DATA SWITCH!\n");
+					if (d.WORDS > TWO || switch_n != LABEL_NL) {
+						d.tab -> E_ERR += 
+						err_in_line(pERR_ID_line_EXTRA,d_ptr,d.LINE);
+						break;
 					} else {
-						printf("LABEL: %s \n", d.LABEL_ARR[label]);
 						temp_l = d.LABEL_ARR[label];
 						TEMP_T = addtree (TEMP_T, temp_l, d);
 					}
 				}
 		    	break;
-			case EN_N :
-				printf(".entry -> FOUND ");
-				switch_n = (int)d.ENCODING[++i];
-				if (d.WORDS > 1 || switch_n != -1){
-					printf("ERR IN DATA SWITCH!\n");
-				} else {
-					printf("LABEL: %s \n", d.LABEL_ARR[label]);
-					/* temp_l = d.LABEL_ARR[label];
-					TEMP_T = addtree (TEMP_T, temp_l, d);*/
+			case EN_N : /* LINE START WITH ENTRY */
+				if (r == R_TWO){ /* IF R_TWO ADD LABEL TO THE TREE */
+					switch_n = (int)d.ENCODING[++i];
+					if (d.WORDS > TWO || switch_n != LABEL_NL){
+						d.tab -> E_ERR += 
+						err_in_line(pERR_ID_line_EXTRA,d_ptr,d.LINE);
+						break;
+					} else {
+						temp_l = d.LABEL_ARR[label];
+						write_en_file(TEMP_T, temp_l,d);
+					}
 				}
 		    	break;
-			case STRING_N :
-				if (r == R_ONE)
-					dataString(d,i);
+			case STRING_N : /* LINE WITH STRING */
+				dataString(d,i,r);
 				switch_n = BREAK;
 				break;
-			case DIGIT_N :
-				if (r == R_ONE)
-					dataDigit(d,i);
+			case DIGIT_N : /* LINE WITH DIGIT DATA */
+				dataDigit(d,i,r);
 				switch_n = BREAK;
 				break;
 			default :
-		    	printf("FOUND ERR IN DATA SWITCH!\n");
+		    	d.tab -> E_ERR += err_in_line(ZERO,d_ptr,d.LINE);
 		} /* END OF SWITCH */
 
 		if (switch_n == BREAK) break;		
 	} /* END OF FOR */
-
-	if (r == R_ONE){
-		printf("DC = %d\n", d.tab -> DC);
-
-
-		while (TEMP!=NULL){
-			printf("%d", TEMP -> data);
-			TEMP = TEMP -> next;
-		}
-		
-		puts("");
-	}
 	return 0;
 }
 
-int dataString (theDATA d, int i)
+/* COUNT THE DC AND ENTER STRING TO ARRAY */
+int dataString (theDATA d, int i, int r)
 {
-	int j = 0, switch_n = 0;
-	int words = 0, strLen = 0;
+	int j = ZERO, switch_n = ZERO;
+	int strLen = ZERO;
+	theDATA * d_ptr = &d;
 
-	words = d.WORDS; /* HOW MUCH WORD IN THIS LINE */
-
-	printf("string -> FOUND ");
 	switch_n = (int)d.ENCODING[++i];
-
-	if (d.WORDS > 2 || switch_n != STRING_A)
-		printf("ERR IN DATA SWITCH!\n");
+	
+	/* IF THIS LINE NOT ONLY A STRING PRINT ERR */
+	if (d.WORDS > TWO || switch_n != STRING_A)
+		d.tab -> E_ERR += err_in_line(pERR_ID_line_DATA,d_ptr,d.LINE);
 	else{
-		strLen = strlen(d.STRING) - 1; /* +EOF */
-		while(j++ < strLen-1){
-			d.tab -> DC_PTR =  d.tab -> DC_PTR -> next = lalloc();
-			d.tab -> DC_PTR -> data = (int) d.STRING[j];
-			d.tab -> DC_PTR -> next = NULL;
-			d.tab -> DC++;
+		strLen = strlen(d.STRING) - ONE; /* +EOF */
+		while(j++ < strLen-ONE){
+			if (r == R_TWO) /* IF R_TWO ENTER STRING ELSE COUNT DC */
+				d.MC_ARR[d.tab -> FINAL_DC++] = (int) d.STRING[j];
+			else
+				d.tab -> DC++;
 		}
-		d.tab -> DC_PTR =  d.tab -> DC_PTR -> next = lalloc();
-		d.tab -> DC_PTR -> data = (int) '\0';
-		d.tab -> DC_PTR -> next = NULL;
-		d.tab -> DC++;
+		if (r == R_TWO)
+				d.MC_ARR[d.tab -> FINAL_DC++] = (int) '\0';
+		else
+			d.tab -> DC++;
 				
-		printf("%d, %s \n", strLen, d.STRING);
 		free(d.STRING); /* IMPORTANT TO FREE THE MALLOC */
 	}
-
-	if (i == words)
-		printf("\nSTRING FINE!\n");
-	else
-		printf("\nSTRING NOT FINE!\n");
-
 	return 0;
 }
 
-int dataDigit (theDATA d, int i)
+/* COUNT THE DC AND ENTER DIGIT DATA TO ARRAY */
+int dataDigit (theDATA d, int i, int r)
 {
-	int words = 0, num = 0, numARR = 0;
-	int switch_n, j=0; 
-	words = d.WORDS; /* HOW MUCH WORD IN THIS LINE */
+	int num = ZERO, numARR = ZERO;
+	int switch_n, j=ZERO;
+	theDATA * d_ptr = &d;
+
+	/* IF NOT END WITH DIGIT */
+	if ((switch_n = (int)d.ENCODING[d.WORDS]) != DIGIT_A)
+		d.tab -> E_ERR += err_in_line(pERR_ID_line_DATA,d_ptr,d.LINE);
+
 	numARR = d.NUM;	/* HOW MUCH DATA DIGIT IN THIS LINE */
 
-	printf("data -> FOUND ");
 	do {
 		switch_n = (int)d.ENCODING[++i];
 		if (switch_n == DIGIT_A){
-			d.tab -> DC_PTR =  d.tab -> DC_PTR -> next = lalloc();
-			d.tab -> DC_PTR -> data = d.NUM_ARR[j++];
-			d.tab -> DC_PTR -> next = NULL;
-			d.tab -> DC++;
-			printf("%d", d.NUM_ARR[num++]);
-		} else if (switch_n == COMMA_N)
-			printf(", ");
-		else
-			printf("FOUND ERR IN DIGIT DATA!\n");
+			num++;
+			if (r == R_TWO) /* IF R_TWO ENTER DATA ELSE COUNT DC */
+				d.MC_ARR[d.tab -> FINAL_DC++] = d.NUM_ARR[j++];
+			else
+				d.tab -> DC++;
+		} else if (switch_n == COMMA_N) {
+			;
+		} else { /* IF NOT DIGIT OR COMMA */
+			d.tab -> E_ERR += err_in_line(pERR_ID_line_DATA,d_ptr,d.LINE);
+			break;
+				}
 		} while (num < numARR);
-
-	if (i == words)
-		printf("\nDIGIT FINE!\n");
-	else
-		printf("\nDIGIT NOT FINE!\n");
 
 	return 0;
 }
